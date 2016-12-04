@@ -90,7 +90,8 @@ class SOCKSConnection(HTTPConnection):
         except SocketTimeout as e:
             raise ConnectTimeoutError(
                 self, "Connection to %s timed out. (connect timeout=%s)" %
-                (self.host, self.timeout))
+                (self.host, self.timeout),
+                e)
 
         except socks.ProxyError as e:
             # This is fragile as hell, but it seems to be the only way to raise
@@ -101,22 +102,25 @@ class SOCKSConnection(HTTPConnection):
                     raise ConnectTimeoutError(
                         self,
                         "Connection to %s timed out. (connect timeout=%s)" %
-                        (self.host, self.timeout)
+                        (self.host, self.timeout),
+                        error
                     )
                 else:
                     raise NewConnectionError(
                         self,
-                        "Failed to establish a new connection: %s" % error
+                        "Failed to establish a new connection: %s" % error,
+                        error
                     )
             else:
                 raise NewConnectionError(
                     self,
-                    "Failed to establish a new connection: %s" % e
+                    "Failed to establish a new connection: %s" % e,
+                    e
                 )
 
         except SocketError as e:  # Defensive: PySocks should catch all these.
             raise NewConnectionError(
-                self, "Failed to establish a new connection: %s" % e)
+                self, "Failed to establish a new connection: %s" % e, e)
 
         return conn
 

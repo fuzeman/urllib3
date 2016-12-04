@@ -310,18 +310,18 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
         """Is the error actually a timeout? Will raise a ReadTimeout or pass"""
 
         if isinstance(err, SocketTimeout):
-            raise ReadTimeoutError(self, url, "Read timed out. (read timeout=%s)" % timeout_value)
+            raise ReadTimeoutError(self, url, "Read timed out. (read timeout=%s)" % timeout_value, err)
 
         # See the above comment about EAGAIN in Python 3. In Python 2 we have
         # to specifically catch it and throw the timeout error
         if hasattr(err, 'errno') and err.errno in _blocking_errnos:
-            raise ReadTimeoutError(self, url, "Read timed out. (read timeout=%s)" % timeout_value)
+            raise ReadTimeoutError(self, url, "Read timed out. (read timeout=%s)" % timeout_value, err)
 
         # Catch possible read timeouts thrown as SSL errors. If not the
         # case, rethrow the original. We need to do this because of:
         # http://bugs.python.org/issue10272
         if 'timed out' in str(err) or 'did not complete (read)' in str(err):  # Python 2.6
-            raise ReadTimeoutError(self, url, "Read timed out. (read timeout=%s)" % timeout_value)
+            raise ReadTimeoutError(self, url, "Read timed out. (read timeout=%s)" % timeout_value, err)
 
     def _make_request(self, conn, method, url, timeout=_Default, chunked=False,
                       **httplib_request_kw):

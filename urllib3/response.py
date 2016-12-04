@@ -297,10 +297,10 @@ class HTTPResponse(io.IOBase):
             try:
                 yield
 
-            except SocketTimeout:
+            except SocketTimeout as e:
                 # FIXME: Ideally we'd like to include the url in the ReadTimeoutError but
                 # there is yet no clean way to get at it from this context.
-                raise ReadTimeoutError(self._pool, None, 'Read timed out.')
+                raise ReadTimeoutError(self._pool, None, 'Read timed out.', e)
 
             except BaseSSLError as e:
                 # FIXME: Is there a better way to differentiate between SSLErrors?
@@ -309,7 +309,7 @@ class HTTPResponse(io.IOBase):
                     # case, let's avoid swallowing SSL errors.
                     raise
 
-                raise ReadTimeoutError(self._pool, None, 'Read timed out.')
+                raise ReadTimeoutError(self._pool, None, 'Read timed out.', e)
 
             except (HTTPException, SocketError) as e:
                 # This includes IncompleteRead.

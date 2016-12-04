@@ -7,7 +7,23 @@ from .packages.six.moves.http_client import (
 
 class HTTPError(Exception):
     "Base exception used by this module."
-    pass
+    
+    def __init__(self, message, *args):
+        super(HTTPError, self).__init__(*args)
+
+        self.message = message
+
+    def __str__(self):
+        return '%s: %s' % (
+            self.__class__.__name__,
+            self.message
+        )
+
+    def __repr__(self):
+        return '%s(%r)' % (
+            self.__class__.__name__,
+            self.message
+        )
 
 
 class HTTPWarning(Warning):
@@ -17,9 +33,9 @@ class HTTPWarning(Warning):
 
 class PoolError(HTTPError):
     "Base exception for errors caused within a pool."
-    def __init__(self, pool, message):
+    def __init__(self, pool, message, *args):
         self.pool = pool
-        HTTPError.__init__(self, "%s: %s" % (pool, message))
+        HTTPError.__init__(self, "%s: %s" % (pool, message), *args)
 
     def __reduce__(self):
         # For pickling purposes.
@@ -28,9 +44,9 @@ class PoolError(HTTPError):
 
 class RequestError(PoolError):
     "Base exception for PoolErrors that have associated URLs."
-    def __init__(self, pool, url, message):
+    def __init__(self, pool, url, message, *args):
         self.url = url
-        PoolError.__init__(self, pool, message)
+        PoolError.__init__(self, pool, message, *args)
 
     def __reduce__(self):
         # For pickling purposes.
