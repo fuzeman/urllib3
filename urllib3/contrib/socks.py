@@ -89,7 +89,7 @@ class SOCKSConnection(HTTPConnection):
 
         except SocketTimeout as e:
             raise ConnectTimeoutError(
-                self, "Connection to %s timed out. (connect timeout=%s)" %
+                "Connection to %s timed out. (connect timeout=%s)" %
                 (self.host, self.timeout),
                 e)
 
@@ -100,7 +100,6 @@ class SOCKSConnection(HTTPConnection):
                 error = e.socket_err
                 if isinstance(error, SocketTimeout):
                     raise ConnectTimeoutError(
-                        self,
                         "Connection to %s timed out. (connect timeout=%s)" %
                         (self.host, self.timeout),
                         error
