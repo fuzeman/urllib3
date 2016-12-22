@@ -101,8 +101,8 @@ class SOCKSConnection(HTTPConnection):
                 if isinstance(error, SocketTimeout):
                     raise ConnectTimeoutError(
                         "Connection to %s timed out. (connect timeout=%s)" %
-                        (self.host, self.timeout),
-                        error
+                        (self._socks_options['proxy_host'], self.timeout),
+                        e
                     )
                 else:
                     raise NewConnectionError(
@@ -152,27 +152,28 @@ class SOCKSProxyManager(PoolManager):
 
     def __init__(self, proxy_url, username=None, password=None,
                  num_pools=10, headers=None, **connection_pool_kw):
-        parsed = parse_url(proxy_url)
+        proxy = parse_url(proxy_url)
 
-        if parsed.scheme == 'socks5':
+        if proxy.scheme == 'socks5':
             socks_version = socks.PROXY_TYPE_SOCKS5
-        elif parsed.scheme == 'socks4':
+        elif proxy.scheme == 'socks4':
             socks_version = socks.PROXY_TYPE_SOCKS4
         else:
             raise ValueError(
                 "Unable to determine SOCKS version from %s" % proxy_url
             )
 
-        self.proxy_url = proxy_url
+        self.proxy = proxy
 
         socks_options = {
             'socks_version': socks_version,
-            'proxy_host': parsed.host,
-            'proxy_port': parsed.port,
+            'proxy_host': proxy.host,
+            'proxy_port': proxy.port,
             'username': username,
             'password': password,
         }
         connection_pool_kw['_socks_options'] = socks_options
+        connection_pool_kw['_proxy'] = self.proxy
 
         super(SOCKSProxyManager, self).__init__(
             num_pools, headers, **connection_pool_kw
